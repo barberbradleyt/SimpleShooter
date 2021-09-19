@@ -14,6 +14,23 @@ AShooterCharacter::AShooterCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	UE_LOG(LogTemp, Warning, TEXT("Character::CanCrouch=%s"), (CanCrouch() ? TEXT("true") : TEXT("false")));
+
+	//Instantiating Class Components
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+
+	//Attach the Spring Arm to the Character's Skeletal Mesh Component
+	SpringArmComp->SetupAttachment(GetCapsuleComponent());
+
+	//Attach the Camera to the SpringArmComponent
+	CameraComp->AttachToComponent(SpringArmComp, FAttachmentTransformRules::KeepRelativeTransform);
+
+	//Setting default properties of the SpringArmComp
+	SpringArmComp->bUsePawnControlRotation = true;
+	SpringArmComp->bEnableCameraLag = true;
+	SpringArmComp->CameraLagMaxDistance = CameraLagMaxDistance;
+	SpringArmComp->TargetArmLength = SpringArmLength;
+	SpringArmComp->SocketOffset = SpringArmSocketOffset;
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +84,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(TEXT("Shoot"), EInputEvent::IE_Pressed, this, &AShooterCharacter::Shoot);
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("ToggleCrouch"), EInputEvent::IE_Pressed, this, &AShooterCharacter::ToggleCrouch);
+	PlayerInputComponent->BindAction(TEXT("SwitchCameraShoulder"), EInputEvent::IE_Pressed, this, &AShooterCharacter::SwitchCameraShoulder);
+	PlayerInputComponent->BindAction(TEXT("Zoom"), EInputEvent::IE_Pressed, this, &AShooterCharacter::ZoomAim);
+	PlayerInputComponent->BindAction(TEXT("Zoom"), EInputEvent::IE_Released, this, &AShooterCharacter::UnZoomAim);
 }
 
 float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -135,7 +155,24 @@ void AShooterCharacter::LookRightRate(float AxisValue)
 void AShooterCharacter::Shoot() {
 	Gun->PullTrigger();
 }
-
+void AShooterCharacter::SwitchCameraShoulder() {
+	UE_LOG(LogTemp, Warning, TEXT("SwitchingCameraShoulder"));
+	if (SpringArmComp != nullptr) {
+		SpringArmComp->SocketOffset = SpringArmComp->SocketOffset * FVector(1.0f, -1.0f, 1.0f);
+	}
+}
+void AShooterCharacter::ZoomAim() {
+	UE_LOG(LogTemp, Warning, TEXT("Zoom pressed"));
+	if (SpringArmComp != nullptr) {
+		SpringArmComp->TargetArmLength = ZoomedSpringArmLength;
+	}
+}
+void AShooterCharacter::UnZoomAim() {
+	UE_LOG(LogTemp, Warning, TEXT("Zoom released"));
+	if (SpringArmComp != nullptr) {
+		SpringArmComp->TargetArmLength = SpringArmLength;
+	}
+}
 /////////////////////////////////////////////////////////////////////////////
 
 

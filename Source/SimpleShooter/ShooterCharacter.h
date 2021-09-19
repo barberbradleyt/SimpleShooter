@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "ShooterCharacter.generated.h"
 
 class AGun;
@@ -20,6 +22,24 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UCameraComponent* CameraComp;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CameraLagMaxDistance = 2.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float SpringArmLength = 225.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ZoomedSpringArmLength = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	FVector SpringArmSocketOffset = FVector(0.0f, 58.0f, 65.0f);
 
 public:
 	UFUNCTION(BlueprintPure)
@@ -48,6 +68,9 @@ private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
 	void ToggleCrouch();
+	void SwitchCameraShoulder();
+	void ZoomAim();
+	void UnZoomAim();
 
 	// Mouse Look
 	void LookUp(float AxisValue);
